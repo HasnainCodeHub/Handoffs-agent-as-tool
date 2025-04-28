@@ -14,4 +14,12 @@
 
 # Query:How many handoffs do you have? Also tell Which Agent Have Agents As A Tool name it also
 ## Response: I have three handoffs. The Agentic AI Agent is the one that has agents as a tool.
+
 ```
+
+
+# Chainlit Integration:
+
+![CHainlit UI](chainlit.png)
+
+

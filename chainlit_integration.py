@@ -1,5 +1,6 @@
 import chainlit as cl
 import os
+from openai.types.responses import ResponseTextDeltaEvent
 from agents import Agent, RunConfig, AsyncOpenAI, OpenAIChatCompletionsModel, Runner
 from agents.tool import function_tool
 from dotenv import load_dotenv, find_dotenv
@@ -30,7 +31,7 @@ run_config = RunConfig(
 MODEL = 'gemini/gemini-2.0-flash'
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Dummy backend and devops developer agents for now (you can replace them with real ones)
+# Dummy backend and devops developer agents for now
 backend_developer = Agent(
     name="Backend Developer",
     instructions="You are a Backend Developer expert.",
@@ -83,17 +84,40 @@ agent = Agent(
     handoffs=[web_dev_agent, mobile_dev_agent, agenticai_agent]
 )
 
+@cl.on_chat_start
+async def start():
+    # Initialize conversation history
+    cl.user_session.set('history', [])
+    # Send welcome message
+    await cl.Message(content="Hello, How can I help you today?").send()
+
 @cl.on_message
 async def handle_message(message: cl.Message):
-    # Initialize a response message with streaming enabled
-    response_message = cl.Message(content="")
-    await response_message.send()
+    # Get conversation history
+    history = cl.user_session.get('history')
+    
+    # Initialize response message with streaming enabled
+    msg = cl.Message(content="")
+    await msg.send()
 
-    # Run the agent with the user's input
-    result = await Runner.run(agent, input=message.content, run_config=run_config)
+    # Append user message to history
+    history.append({"role": "user", "content": message.content})
 
-    # Stream the final output (assuming final_output is a string)
-    await response_message.stream_token(result.final_output)
+    # Run the agent with the history as input
+    result = Runner.run_streamed(
+        agent,
+        input=history,
+        run_config=run_config
+    )
+
+    # Stream response events
+    async for event in result.stream_events():
+        if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
+            await msg.stream_token(event.data.delta)
+
+    # Append assistant response to history
+    history.append({"role": "assistant", "content": result.final_output})
+    cl.user_session.set('history', history)
 
     # Finalize the response
-    await response_message.update()
+    await msg.update()
