@@ -1,13 +1,9 @@
 # SOLUTION OF LITELLM ERROR RUN THIS COMMAND IN CMD TERMINAL : set PYTHONUTF8=1
 
-
-
 import chainlit as cl
 import os
-import requests
 import asyncio  # Added import for asyncio
 from agents import Agent, RunConfig, AsyncOpenAI, OpenAIChatCompletionsModel, Runner
-from agents.tool import function_tool
 from dotenv import load_dotenv, find_dotenv
 from agents.extensions.models.litellm_model import LitellmModel
 
@@ -90,9 +86,16 @@ agent = Agent(
 )
 
 # Main function
+import asyncio
+
 async def main(input_text: str):
     result = await Runner.run(agent, input=input_text, run_config=run_config)
-    print(result.final_output)
+    return result.final_output
 
 if __name__ == "__main__":
-    asyncio.run(main("How many handoffs do you have? Also tell Which Agent Have Agents As A Tool name it also"))
+    while True:
+        user_input = input('Enter Your Query: ')
+        if user_input.strip().lower() == 'exit':
+            break
+        final_output = asyncio.run(main(user_input))
+        print(final_output)
