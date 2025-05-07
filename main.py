@@ -1,6 +1,5 @@
 # SOLUTION OF LITELLM ERROR RUN THIS COMMAND IN CMD TERMINAL : set PYTHONUTF8=1
 
-import chainlit as cl
 import os
 import asyncio  # Added import for asyncio
 from agents import Agent, RunConfig, AsyncOpenAI, OpenAIChatCompletionsModel, Runner

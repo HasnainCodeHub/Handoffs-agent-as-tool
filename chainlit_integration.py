@@ -2,7 +2,6 @@ import chainlit as cl
 import os
 from openai.types.responses import ResponseTextDeltaEvent
 from agents import Agent, RunConfig, AsyncOpenAI, OpenAIChatCompletionsModel, Runner
-from agents.tool import function_tool
 from dotenv import load_dotenv, find_dotenv
 from agents.extensions.models.litellm_model import LitellmModel
 
@@ -14,7 +13,6 @@ provider = AsyncOpenAI(
     api_key=os.getenv("GEMINI_API_KEY"),
     base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
 )
-
 # Step 2: Model
 model = OpenAIChatCompletionsModel(
     model="gemini-2.0-flash",
